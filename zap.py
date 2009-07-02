@@ -40,11 +40,12 @@ class Zap(webapp.RequestHandler):
                 self.redirect(users.create_login_url(self.request.uri))
                 return
             email = user.email()
-            friend = Friend.gql('where email = :email', email=email).get()
-            if friend is None:
-                info('prevented %s from zapping %s', email, url)
-                write('not allowed')
-                return
+            if Friend.all(keys_only=True).count():
+                friend = Friend.gql('where email = :email', email=email).get()
+                if friend is None:
+                    info('prevented %s from zapping %s', email, url)
+                    write('not allowed')
+                    return
             query = Entry.gql('order by date desc')
             last = query.get()
             if last is not None:
