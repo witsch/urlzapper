@@ -4,6 +4,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from urlparse import urlsplit, urlunsplit
 from urllib import unquote
+from logging import info
 from gen import next
 
 
@@ -39,6 +40,7 @@ class Zap(webapp.RequestHandler):
             entry.url = url
             entry.zap = zap
             entry.put()
+            info('zapped %s to %s for user %s', url, zap, user)
         base = urlsplit(self.request.uri)
         host = urlunsplit(base[:2] + ('/', '', ''))
         target = host + entry.zap
@@ -56,8 +58,10 @@ class Unzap(webapp.RequestHandler):
         if entry is None:
             self.error(404)
             self.response.out.write('doh!')
+            info('request for unknown zap: /%s', zap)
         else:
             self.redirect(entry.url)
+            info('redirecting /%s to %s', zap, entry.url)
 
 
 application = webapp.WSGIApplication([
