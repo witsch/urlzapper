@@ -2,6 +2,7 @@ from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
+from urlparse import urlsplit, urlunsplit
 from urllib import unquote
 from gen import next
 
@@ -38,9 +39,12 @@ class Zap(webapp.RequestHandler):
             entry.url = url
             entry.zap = zap
             entry.put()
+        base = urlsplit(self.request.uri)
+        host = urlunsplit(base[:2] + ('/', '', ''))
+        target =  host + entry.zap
         write = self.response.out.write
-        write('zapped: %s (%d chars) <br/>' % (entry.url, len(entry.url)))
-        write('to:     %s (%d chars) <br/>' % (entry.zap, len(entry.zap)))
+        write('zapped (%d chars): %s <br/>' % (len(url), url))
+        write('to (%d chars): <a href="%s">%s</a> <br/>' % (len(target), target, target))
 
 
 class Unzap(webapp.RequestHandler):
