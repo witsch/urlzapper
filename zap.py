@@ -79,9 +79,33 @@ class Unzap(webapp.RequestHandler):
             info('redirecting /%s to %s', zap, entry.url)
 
 
+class Friends(webapp.RequestHandler):
+
+    def get(self):
+        self.response.headers['Content-Type'] = 'text/plain'
+        write = self.response.out.write
+        email = self.request.get('email')
+        assert email, 'no email?'
+        if not users.is_current_user_admin():
+            self.redirect(users.create_login_url(self.request.uri))
+            return
+        friend = Friend.gql('where email = :email', email=email).get()
+        if friend is None:
+            friend = Friend()
+            friend.email = email
+            friend.put()
+            user = users.get_current_user()
+            msg = '%s added %s as a friend' % (user.email(), email)
+        else:
+            msg = '%s already exists as a friend' % email
+        info(msg)
+        write(msg)
+
+
 application = webapp.WSGIApplication([
     ('/favicon.ico', NotHere),
     ('/create', Zap),
+    ('/friends', Friends),
     (r'/(.*)', Unzap)],
     debug=True)
 
