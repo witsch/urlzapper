@@ -29,6 +29,10 @@ class Zap(webapp.RequestHandler):
         assert url, 'no url?'
         entry = Entry.gql('where url = :url', url=url).get()
         if entry is None:
+            user = users.get_current_user()
+            if user is None:
+                self.redirect(users.create_login_url(self.request.uri))
+                return
             query = Entry.gql('order by date desc')
             last = query.get()
             if last is not None:
@@ -36,7 +40,7 @@ class Zap(webapp.RequestHandler):
             else:
                 zap = next('')
             entry = Entry()
-            entry.author = users.get_current_user()
+            entry.author = user
             entry.url = url
             entry.zap = zap
             entry.put()
