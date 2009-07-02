@@ -41,10 +41,11 @@ class Zap(webapp.RequestHandler):
             entry.put()
         base = urlsplit(self.request.uri)
         host = urlunsplit(base[:2] + ('/', '', ''))
-        target =  host + entry.zap
+        target = host + entry.zap
         write = self.response.out.write
         write('zapped (%d chars): %s <br/>' % (len(url), url))
-        write('to (%d chars): <a href="%s">%s</a> <br/>' % (len(target), target, target))
+        write('to (%d chars): <a href="%s">%s</a> <br/>' % (len(target),
+            target, target))
 
 
 class Unzap(webapp.RequestHandler):
