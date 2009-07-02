@@ -15,6 +15,11 @@ class Entry(db.Model):
     date = db.DateTimeProperty(auto_now_add=True)
 
 
+class Friend(db.Model):
+    email = db.StringProperty()
+    date = db.DateTimeProperty(auto_now_add=True)
+
+
 class NotHere(webapp.RequestHandler):
 
     def get(self):
@@ -25,6 +30,7 @@ class Zap(webapp.RequestHandler):
 
     def get(self):
         self.response.headers['Content-Type'] = 'text/html'
+        write = self.response.out.write
         url = self.request.get('url')
         assert url, 'no url?'
         entry = Entry.gql('where url = :url', url=url).get()
@@ -32,6 +38,12 @@ class Zap(webapp.RequestHandler):
             user = users.get_current_user()
             if user is None:
                 self.redirect(users.create_login_url(self.request.uri))
+                return
+            email = user.email()
+            friend = Friend.gql('where email = :email', email=email).get()
+            if friend is None:
+                info('prevented %s from zapping %s', email, url)
+                write('not allowed')
                 return
             query = Entry.gql('order by date desc')
             last = query.get()
@@ -48,7 +60,6 @@ class Zap(webapp.RequestHandler):
         base = urlsplit(self.request.uri)
         host = urlunsplit(base[:2] + ('/', '', ''))
         target = host + entry.zap
-        write = self.response.out.write
         write('zapped (%d chars): %s <br/>' % (len(url), url))
         write('to (%d chars): <a href="%s">%s</a> <br/>' % (len(target),
             target, target))
