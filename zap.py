@@ -58,8 +58,12 @@ class Zap(webapp.RequestHandler):
             entry.zap = zap
             entry.put()
             info('zapped %s to %s for user %s', url, zap, user)
-        base = urlsplit(self.request.uri)
-        host = urlunsplit(base[:2] + ('/', '', ''))
+        host = self.request.get('host')
+        if host:
+            host = 'http://%s/' % host
+        else:
+            base = urlsplit(self.request.uri)
+            host = urlunsplit(base[:2] + ('/', '', ''))
         target = host + entry.zap
         write('zapped (%d chars): %s <br/>' % (len(url), url))
         write('to (%d chars): <a href="%s">%s</a> <br/>' % (len(target),
