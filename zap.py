@@ -6,6 +6,7 @@ from urlparse import urlsplit, urlunsplit
 from urllib import unquote
 from logging import info
 from gen import next
+from resources import selectall
 
 
 class Entry(db.Model):
@@ -65,9 +66,12 @@ class Zap(webapp.RequestHandler):
             base = urlsplit(self.request.uri)
             host = urlunsplit(base[:2] + ('/', '', ''))
         target = host + entry.zap
+        write('<body>')
+        write(selectall)
         write('zapped (%d chars): %s <br/>' % (len(url), url))
-        write('to (%d chars): <a href="%s">%s</a> <br/>' % (len(target),
-            target, target))
+        write('to (%d chars): <input type="text" id="url" value="%s"/>' % (
+            len(target), target))
+        write('</body>')
 
 
 class Unzap(webapp.RequestHandler):
